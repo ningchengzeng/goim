@@ -2,12 +2,10 @@ package dao
 
 import (
 	"context"
-	"strconv"
 
-	pb "github.com/Terry-Mao/goim/api/logic"
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
 	"github.com/golang/protobuf/proto"
-	sarama "gopkg.in/Shopify/sarama.v1"
+	pb "github.com/ningchengzeng/goim/api/logic"
 )
 
 // PushMsg push a message to databus.
@@ -23,13 +21,9 @@ func (d *Dao) PushMsg(c context.Context, op int32, server string, keys []string,
 	if err != nil {
 		return
 	}
-	m := &sarama.ProducerMessage{
-		Key:   sarama.StringEncoder(keys[0]),
-		Topic: d.c.Kafka.Topic,
-		Value: sarama.ByteEncoder(b),
-	}
-	if _, _, err = d.kafkaPub.SendMessage(m); err != nil {
-		log.Errorf("PushMsg.send(push pushMsg:%v) error(%v)", pushMsg, err)
+
+	if err = d.nsqPub.Publish(d.c.Nsq.Topic, b); err != nil {
+		log.Error("PushMsg.send(push pushMsg:%v) error(%v)", pushMsg, err)
 	}
 	return
 }
@@ -46,13 +40,8 @@ func (d *Dao) BroadcastRoomMsg(c context.Context, op int32, room string, msg []b
 	if err != nil {
 		return
 	}
-	m := &sarama.ProducerMessage{
-		Key:   sarama.StringEncoder(room),
-		Topic: d.c.Kafka.Topic,
-		Value: sarama.ByteEncoder(b),
-	}
-	if _, _, err = d.kafkaPub.SendMessage(m); err != nil {
-		log.Errorf("PushMsg.send(broadcast_room pushMsg:%v) error(%v)", pushMsg, err)
+	if err = d.nsqPub.Publish(d.c.Nsq.Topic, b); err != nil {
+		log.Error("PushMsg.send(broadcast_room pushMsg:%v) error(%v)", pushMsg, err)
 	}
 	return
 }
@@ -69,13 +58,8 @@ func (d *Dao) BroadcastMsg(c context.Context, op, speed int32, msg []byte) (err 
 	if err != nil {
 		return
 	}
-	m := &sarama.ProducerMessage{
-		Key:   sarama.StringEncoder(strconv.FormatInt(int64(op), 10)),
-		Topic: d.c.Kafka.Topic,
-		Value: sarama.ByteEncoder(b),
-	}
-	if _, _, err = d.kafkaPub.SendMessage(m); err != nil {
-		log.Errorf("PushMsg.send(broadcast pushMsg:%v) error(%v)", pushMsg, err)
+	if err = d.nsqPub.Publish(d.c.Nsq.Topic, b); err != nil {
+		log.Error("PushMsg.send(broadcast pushMsg:%v) error(%v)", pushMsg, err)
 	}
 	return
 }

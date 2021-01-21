@@ -9,8 +9,8 @@ import (
 	"sync"
 
 	"github.com/bilibili/discovery/naming"
-	"github.com/Terry-Mao/goim/internal/logic/model"
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
+	"github.com/ningchengzeng/goim/internal/logic/model"
 )
 
 const (
@@ -137,7 +137,7 @@ func (lb *LoadBalancer) Update(ins []*naming.Instance) {
 		nodes       = make(map[string]*weightedNode, len(ins))
 	)
 	if len(ins) == 0 || float32(len(ins))/float32(len(lb.nodes)) < 0.5 {
-		log.Errorf("load balancer update src:%d target:%d less than half", len(lb.nodes), len(ins))
+		log.Error("load balancer update src:%d target:%d less than half", len(lb.nodes), len(ins))
 		return
 	}
 	lb.nodesMutex.Lock()
@@ -150,12 +150,12 @@ func (lb *LoadBalancer) Update(ins []*naming.Instance) {
 			meta := in.Metadata
 			weight, err := strconv.ParseInt(meta[model.MetaWeight], 10, 32)
 			if err != nil {
-				log.Errorf("instance(%+v) strconv.ParseInt(weight:%s) error(%v)", in, meta[model.MetaWeight], err)
+				log.Error("instance(%+v) strconv.ParseInt(weight:%s) error(%v)", in, meta[model.MetaWeight], err)
 				continue
 			}
 			conns, err := strconv.ParseInt(meta[model.MetaConnCount], 10, 32)
 			if err != nil {
-				log.Errorf("instance(%+v) strconv.ParseInt(conns:%s) error(%v)", in, meta[model.MetaConnCount], err)
+				log.Error("instance(%+v) strconv.ParseInt(conns:%s) error(%v)", in, meta[model.MetaConnCount], err)
 				continue
 			}
 			nodes[in.Hostname] = &weightedNode{

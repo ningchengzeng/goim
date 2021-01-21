@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	pb "github.com/Terry-Mao/goim/api/logic"
-	"github.com/Terry-Mao/goim/internal/logic/model"
 	"github.com/bilibili/discovery/naming"
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
+	pb "github.com/ningchengzeng/goim/api/logic"
+	"github.com/ningchengzeng/goim/internal/logic/model"
 )
 
 // NodesInstances get servers info.
@@ -51,7 +51,7 @@ func (l *Logic) nodeAddrs(c context.Context, clientIP string) (domains, addrs []
 	if err == nil {
 		region = l.regions[province]
 	}
-	log.Infof("nodeAddrs clientIP:%s region:%s province:%s domains:%v addrs:%v", clientIP, region, province, domains, addrs)
+	log.Info("nodeAddrs clientIP:%s region:%s province:%s domains:%v addrs:%v", clientIP, region, province, domains, addrs)
 	return l.loadBalancer.NodeAddrs(region, l.c.Node.HostDomain, l.c.Node.RegionWeight)
 }
 

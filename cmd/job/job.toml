@@ -1,0 +1,17 @@
+# This is a TOML document. Boom
+[discovery]
+    nodes = ["127.0.0.1:7171"]
+
+[nsq]
+    topic = "goim-topic"
+    channel = "goim-channel-job"
+    address = ["127.0.0.1:4161"]
+
+# 本可用区zone(一般指机房)标识
+[env]
+region = "sh"
+zone = "sh001"
+DeployEnv = "dev"
+
+[log]
+stdout = true

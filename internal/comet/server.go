@@ -5,9 +5,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/Terry-Mao/goim/api/logic"
-	"github.com/Terry-Mao/goim/internal/comet/conf"
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
+	"github.com/ningchengzeng/goim/api/logic"
+	"github.com/ningchengzeng/goim/internal/comet/conf"
 	"github.com/zhenjl/cityhash"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
@@ -89,7 +89,7 @@ func (s *Server) Buckets() []*Bucket {
 func (s *Server) Bucket(subKey string) *Bucket {
 	idx := cityhash.CityHash32([]byte(subKey), uint32(len(subKey))) % s.bucketIdx
 	if conf.Conf.Debug {
-		log.Infof("%s hit channel bucket index: %d use cityhash", subKey, idx)
+		log.Info("%s hit channel bucket index: %d use cityhash", subKey, idx)
 	}
 	return s.buckets[idx]
 }

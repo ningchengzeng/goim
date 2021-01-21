@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/Terry-Mao/goim/api/protocol"
-	"github.com/Terry-Mao/goim/internal/logic/model"
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
 	"github.com/google/uuid"
+	"github.com/ningchengzeng/goim/api/protocol"
+	"github.com/ningchengzeng/goim/internal/logic/model"
 )
 
 // Connect connected a conn.
@@ -21,7 +21,7 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 		Accepts  []int32 `json:"accepts"`
 	}
 	if err = json.Unmarshal(token, &params); err != nil {
-		log.Errorf("json.Unmarshal(%s) error(%v)", token, err)
+		log.Error("json.Unmarshal(%s) error(%v)", token, err)
 		return
 	}
 	mid = params.Mid
@@ -32,19 +32,19 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 		key = uuid.New().String()
 	}
 	if err = l.dao.AddMapping(c, mid, key, server); err != nil {
-		log.Errorf("l.dao.AddMapping(%d,%s,%s) error(%v)", mid, key, server, err)
+		log.Error("l.dao.AddMapping(%d,%s,%s) error(%v)", mid, key, server, err)
 	}
-	log.Infof("conn connected key:%s server:%s mid:%d token:%s", key, server, mid, token)
+	log.Info("conn connected key:%s server:%s mid:%d token:%s", key, server, mid, token)
 	return
 }
 
 // Disconnect disconnect a conn.
 func (l *Logic) Disconnect(c context.Context, mid int64, key, server string) (has bool, err error) {
 	if has, err = l.dao.DelMapping(c, mid, key, server); err != nil {
-		log.Errorf("l.dao.DelMapping(%d,%s) error(%v)", mid, key, server)
+		log.Error("l.dao.DelMapping(%d,%s) error(%v)", mid, key, server)
 		return
 	}
-	log.Infof("conn disconnected key:%s server:%s mid:%d", key, server, mid)
+	log.Info("conn disconnected key:%s server:%s mid:%d", key, server, mid)
 	return
 }
 
@@ -52,16 +52,16 @@ func (l *Logic) Disconnect(c context.Context, mid int64, key, server string) (ha
 func (l *Logic) Heartbeat(c context.Context, mid int64, key, server string) (err error) {
 	has, err := l.dao.ExpireMapping(c, mid, key)
 	if err != nil {
-		log.Errorf("l.dao.ExpireMapping(%d,%s,%s) error(%v)", mid, key, server, err)
+		log.Error("l.dao.ExpireMapping(%d,%s,%s) error(%v)", mid, key, server, err)
 		return
 	}
 	if !has {
 		if err = l.dao.AddMapping(c, mid, key, server); err != nil {
-			log.Errorf("l.dao.AddMapping(%d,%s,%s) error(%v)", mid, key, server, err)
+			log.Error("l.dao.AddMapping(%d,%s,%s) error(%v)", mid, key, server, err)
 			return
 		}
 	}
-	log.Infof("conn heartbeat key:%s server:%s mid:%d", key, server, mid)
+	log.Info("conn heartbeat key:%s server:%s mid:%d", key, server, mid)
 	return
 }
 
@@ -80,6 +80,6 @@ func (l *Logic) RenewOnline(c context.Context, server string, roomCount map[stri
 
 // Receive receive a message.
 func (l *Logic) Receive(c context.Context, mid int64, proto *protocol.Proto) (err error) {
-	log.Infof("receive mid:%d message:%+v", mid, proto)
+	log.Info("receive mid:%d message:%+v", mid, proto)
 	return
 }

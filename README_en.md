@@ -43,7 +43,7 @@ Please follow the official quick start [here](https://golang.org/doc/install).
 ```sh
 $ yum install git
 $ cd $GOPATH/src
-$ git clone https://github.com/Terry-Mao/goim.git
+$ git clone https://github.com/ningchengzeng/goim.git
 $ cd $GOPATH/src/goim
 $ go get ./...
 ```
@@ -90,7 +90,7 @@ Check the push protocols here[push HTTP protocols](./docs/push.md)
 TODO
 
 ## Examples
-Websocket: [Websocket Client Demo](https://github.com/Terry-Mao/goim/tree/master/examples/javascript)
+Websocket: [Websocket Client Demo](https://github.com/ningchengzeng/goim/tree/master/examples/javascript)
 
 Android: [Android SDK](https://github.com/roamdy/goim-sdk)
 

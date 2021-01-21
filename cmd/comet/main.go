@@ -16,12 +16,12 @@ import (
 
 	"github.com/bilibili/discovery/naming"
 	resolver "github.com/bilibili/discovery/naming/grpc"
-	"github.com/Terry-Mao/goim/internal/comet"
-	"github.com/Terry-Mao/goim/internal/comet/conf"
-	"github.com/Terry-Mao/goim/internal/comet/grpc"
-	md "github.com/Terry-Mao/goim/internal/logic/model"
-	"github.com/Terry-Mao/goim/pkg/ip"
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
+	"github.com/ningchengzeng/goim/internal/comet"
+	"github.com/ningchengzeng/goim/internal/comet/conf"
+	"github.com/ningchengzeng/goim/internal/comet/grpc"
+	md "github.com/ningchengzeng/goim/internal/logic/model"
+	"github.com/ningchengzeng/goim/pkg/ip"
 )
 
 const (
@@ -36,10 +36,11 @@ func main() {
 	}
 	rand.Seed(time.Now().UTC().UnixNano())
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	println(conf.Conf.Debug)
-	log.Infof("goim-comet [version: %s env: %+v] start", ver, conf.Conf.Env)
+
+	log.Init(conf.Conf.Log)
+	log.Info("goim-comet [version: %s env: %+v] start", ver, conf.Conf.Env)
 	// register discovery
-	dis := naming.New(conf.Conf.Discovery)
+	dis := naming.New(conf.Conf.DiscoveryConfig())
 	resolver.Register(dis)
 	// new comet server
 	srv := comet.NewServer(conf.Conf)
@@ -65,7 +66,7 @@ func main() {
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
 	for {
 		s := <-c
-		log.Infof("goim-comet get a signal %s", s.String())
+		log.Info("goim-comet get a signal %s", s.String())
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			if cancel != nil {
@@ -73,8 +74,8 @@ func main() {
 			}
 			rpcSrv.GracefulStop()
 			srv.Close()
-			log.Infof("goim-comet [version: %s] exit", ver)
-			log.Flush()
+			log.Info("goim-comet [version: %s] exit", ver)
+			log.Close()
 			return
 		case syscall.SIGHUP:
 		default:
@@ -123,7 +124,7 @@ func register(dis *naming.Discovery, srv *comet.Server) context.CancelFunc {
 			ins.Metadata[md.MetaConnCount] = fmt.Sprint(conns)
 			ins.Metadata[md.MetaIPCount] = fmt.Sprint(len(ips))
 			if err = dis.Set(ins); err != nil {
-				log.Errorf("dis.Set(%+v) error(%v)", ins, err)
+				log.Error("dis.Set(%+v) error(%v)", ins, err)
 				time.Sleep(time.Second)
 				continue
 			}

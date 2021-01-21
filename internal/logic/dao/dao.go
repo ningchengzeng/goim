@@ -4,15 +4,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/Terry-Mao/goim/internal/logic/conf"
 	"github.com/gomodule/redigo/redis"
-	kafka "gopkg.in/Shopify/sarama.v1"
+	"github.com/ningchengzeng/goim/internal/logic/conf"
+
+	"github.com/nsqio/go-nsq"
 )
 
 // Dao dao.
 type Dao struct {
 	c           *conf.Config
-	kafkaPub    kafka.SyncProducer
+	nsqPub      *nsq.Producer
 	redis       *redis.Pool
 	redisExpire int32
 }
@@ -21,23 +22,21 @@ type Dao struct {
 func New(c *conf.Config) *Dao {
 	d := &Dao{
 		c:           c,
-		kafkaPub:    newKafkaPub(c.Kafka),
+		nsqPub:      newNsqPub(c.Nsq),
 		redis:       newRedis(c.Redis),
 		redisExpire: int32(time.Duration(c.Redis.Expire) / time.Second),
 	}
 	return d
 }
 
-func newKafkaPub(c *conf.Kafka) kafka.SyncProducer {
-	kc := kafka.NewConfig()
-	kc.Producer.RequiredAcks = kafka.WaitForAll // Wait for all in-sync replicas to ack the message
-	kc.Producer.Retry.Max = 10                  // Retry up to 10 times to produce the message
-	kc.Producer.Return.Successes = true
-	pub, err := kafka.NewSyncProducer(c.Brokers, kc)
+func newNsqPub(c *conf.Nsq) *nsq.Producer {
+	cfg := nsq.NewConfig()
+
+	producer, err := nsq.NewProducer(c.Address, cfg)
 	if err != nil {
-		panic(err)
+		return nil
 	}
-	return pub
+	return producer
 }
 
 func newRedis(c *conf.Redis) *redis.Pool {

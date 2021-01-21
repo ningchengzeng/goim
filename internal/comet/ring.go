@@ -1,10 +1,10 @@
 package comet
 
 import (
-	"github.com/Terry-Mao/goim/api/protocol"
-	"github.com/Terry-Mao/goim/internal/comet/conf"
-	"github.com/Terry-Mao/goim/internal/comet/errors"
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
+	"github.com/ningchengzeng/goim/api/protocol"
+	"github.com/ningchengzeng/goim/internal/comet/conf"
+	"github.com/ningchengzeng/goim/internal/comet/errors"
 )
 
 // Ring ring proto buffer.
@@ -58,7 +58,7 @@ func (r *Ring) Get() (proto *protocol.Proto, err error) {
 func (r *Ring) GetAdv() {
 	r.rp++
 	if conf.Conf.Debug {
-		log.Infof("ring rp: %d, idx: %d", r.rp, r.rp&r.mask)
+		log.Info("ring rp: %d, idx: %d", r.rp, r.rp&r.mask)
 	}
 }
 
@@ -75,7 +75,7 @@ func (r *Ring) Set() (proto *protocol.Proto, err error) {
 func (r *Ring) SetAdv() {
 	r.wp++
 	if conf.Conf.Debug {
-		log.Infof("ring wp: %d, idx: %d", r.wp, r.wp&r.mask)
+		log.Info("ring wp: %d, idx: %d", r.wp, r.wp&r.mask)
 	}
 }
 

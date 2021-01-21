@@ -4,9 +4,9 @@ import (
 	"sync"
 	"sync/atomic"
 
-	pb "github.com/Terry-Mao/goim/api/comet"
-	"github.com/Terry-Mao/goim/api/protocol"
-	"github.com/Terry-Mao/goim/internal/comet/conf"
+	pb "github.com/ningchengzeng/goim/api/comet"
+	"github.com/ningchengzeng/goim/api/protocol"
+	"github.com/ningchengzeng/goim/internal/comet/conf"
 )
 
 // Bucket is a channel holder.

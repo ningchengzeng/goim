@@ -2,9 +2,9 @@ goim v2.0
 ==============
 
 [![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
-[![Build Status](https://github.com/Terry-Mao/goim/workflows/Go/badge.svg)](https://github.com/Terry-Mao/goim/actions)
-[![GoDoc](https://godoc.org/github.com/go-kratos/kratos?status.svg)](https://pkg.go.dev/github.com/Terry-Mao/goim)
-[![Go Report Card](https://goreportcard.com/badge/github.com/Terry-Mao/goim)](https://goreportcard.com/report/github.com/Terry-Mao/goim)
+[![Build Status](https://github.com/ningchengzeng/goim/workflows/Go/badge.svg)](https://github.com/ningchengzeng/goim/actions)
+[![GoDoc](https://godoc.org/github.com/go-kratos/kratos?status.svg)](https://pkg.go.dev/github.com/ningchengzeng/goim)
+[![Go Report Card](https://goreportcard.com/badge/github.com/ningchengzeng/goim)](https://goreportcard.com/report/github.com/ningchengzeng/goim)
 
 goim is an im server writen in golang.
 
@@ -70,7 +70,7 @@ You can view the comments in target/comet.toml,logic.toml,job.toml to understand
 [中文](./README_cn.md)
 
 ## Examples
-Websocket: [Websocket Client Demo](https://github.com/Terry-Mao/goim/tree/master/examples/javascript)
+Websocket: [Websocket Client Demo](https://github.com/ningchengzeng/goim/tree/master/examples/javascript)
 
 Android: [Android](https://github.com/roamdy/goim-sdk)
 

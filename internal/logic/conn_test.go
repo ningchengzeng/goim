@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Terry-Mao/goim/api/protocol"
+	"github.com/ningchengzeng/goim/api/protocol"
 	"github.com/stretchr/testify/assert"
 )
 

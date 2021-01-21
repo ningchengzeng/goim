@@ -6,8 +6,8 @@ package logic
 import (
 	context "context"
 	fmt "fmt"
-	protocol "github.com/Terry-Mao/goim/api/protocol"
 	proto "github.com/golang/protobuf/proto"
+	protocol "github.com/ningchengzeng/goim/api/protocol"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -1006,22 +1006,22 @@ type UnimplementedLogicServer struct {
 }
 
 func (*UnimplementedLogicServer) Connect(ctx context.Context, req *ConnectReq) (*ConnectReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Connect not implemented")
+	return nil, status.Error(codes.Unimplemented, "method Connect not implemented")
 }
 func (*UnimplementedLogicServer) Disconnect(ctx context.Context, req *DisconnectReq) (*DisconnectReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Disconnect not implemented")
+	return nil, status.Error(codes.Unimplemented, "method Disconnect not implemented")
 }
 func (*UnimplementedLogicServer) Heartbeat(ctx context.Context, req *HeartbeatReq) (*HeartbeatReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Heartbeat not implemented")
+	return nil, status.Error(codes.Unimplemented, "method Heartbeat not implemented")
 }
 func (*UnimplementedLogicServer) RenewOnline(ctx context.Context, req *OnlineReq) (*OnlineReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RenewOnline not implemented")
+	return nil, status.Error(codes.Unimplemented, "method RenewOnline not implemented")
 }
 func (*UnimplementedLogicServer) Receive(ctx context.Context, req *ReceiveReq) (*ReceiveReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Receive not implemented")
+	return nil, status.Error(codes.Unimplemented, "method Receive not implemented")
 }
 func (*UnimplementedLogicServer) Nodes(ctx context.Context, req *NodesReq) (*NodesReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Nodes not implemented")
+	return nil, status.Error(codes.Unimplemented, "method Nodes not implemented")
 }
 
 func RegisterLogicServer(s *grpc.Server, srv LogicServer) {

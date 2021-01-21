@@ -5,11 +5,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Terry-Mao/goim/internal/logic/conf"
-	"github.com/Terry-Mao/goim/internal/logic/dao"
-	"github.com/Terry-Mao/goim/internal/logic/model"
 	"github.com/bilibili/discovery/naming"
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
+	"github.com/ningchengzeng/goim/internal/logic/conf"
+	"github.com/ningchengzeng/goim/internal/logic/dao"
+	"github.com/ningchengzeng/goim/internal/logic/model"
 )
 
 const (
@@ -37,7 +37,7 @@ func New(c *conf.Config) (l *Logic) {
 	l = &Logic{
 		c:            c,
 		dao:          dao.New(c),
-		dis:          naming.New(c.Discovery),
+		dis:          naming.New(c.DiscoveryConfig()),
 		loadBalancer: NewLoadBalancer(),
 		regions:      make(map[string]string),
 	}
@@ -99,22 +99,22 @@ func (l *Logic) newNodes(res naming.Resolver) {
 		for _, zins := range zoneIns.Instances {
 			for _, ins := range zins {
 				if ins.Metadata == nil {
-					log.Errorf("node instance metadata is empty(%+v)", ins)
+					log.Error("node instance metadata is empty(%+v)", ins)
 					continue
 				}
 				offline, err := strconv.ParseBool(ins.Metadata[model.MetaOffline])
 				if err != nil || offline {
-					log.Warningf("strconv.ParseBool(offline:%t) error(%v)", offline, err)
+					log.Warn("strconv.ParseBool(offline:%t) error(%v)", offline, err)
 					continue
 				}
 				conns, err := strconv.ParseInt(ins.Metadata[model.MetaConnCount], 10, 32)
 				if err != nil {
-					log.Errorf("strconv.ParseInt(conns:%d) error(%v)", conns, err)
+					log.Error("strconv.ParseInt(conns:%d) error(%v)", conns, err)
 					continue
 				}
 				ips, err := strconv.ParseInt(ins.Metadata[model.MetaIPCount], 10, 32)
 				if err != nil {
-					log.Errorf("strconv.ParseInt(ips:%d) error(%v)", ips, err)
+					log.Error("strconv.ParseInt(ips:%d) error(%v)", ips, err)
 					continue
 				}
 				totalConns += conns
@@ -133,7 +133,7 @@ func (l *Logic) onlineproc() {
 	for {
 		time.Sleep(_onlineTick)
 		if err := l.loadOnline(); err != nil {
-			log.Errorf("onlineproc error(%v)", err)
+			log.Error("onlineproc error(%v)", err)
 		}
 	}
 }

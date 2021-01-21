@@ -6,8 +6,8 @@ package comet
 import (
 	context "context"
 	fmt "fmt"
-	protocol "github.com/Terry-Mao/goim/api/protocol"
 	proto "github.com/golang/protobuf/proto"
+	protocol "github.com/ningchengzeng/goim/api/protocol"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -472,16 +472,16 @@ type UnimplementedCometServer struct {
 }
 
 func (*UnimplementedCometServer) PushMsg(ctx context.Context, req *PushMsgReq) (*PushMsgReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PushMsg not implemented")
+	return nil, status.Error(codes.Unimplemented, "method PushMsg not implemented")
 }
 func (*UnimplementedCometServer) Broadcast(ctx context.Context, req *BroadcastReq) (*BroadcastReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Broadcast not implemented")
+	return nil, status.Error(codes.Unimplemented, "method Broadcast not implemented")
 }
 func (*UnimplementedCometServer) BroadcastRoom(ctx context.Context, req *BroadcastRoomReq) (*BroadcastRoomReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BroadcastRoom not implemented")
+	return nil, status.Error(codes.Unimplemented, "method BroadcastRoom not implemented")
 }
 func (*UnimplementedCometServer) Rooms(ctx context.Context, req *RoomsReq) (*RoomsReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Rooms not implemented")
+	return nil, status.Error(codes.Unimplemented, "method Rooms not implemented")
 }
 
 func RegisterCometServer(s *grpc.Server, srv CometServer) {

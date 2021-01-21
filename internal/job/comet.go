@@ -7,11 +7,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Terry-Mao/goim/api/comet"
-	"github.com/Terry-Mao/goim/internal/job/conf"
 	"github.com/bilibili/discovery/naming"
+	"github.com/ningchengzeng/goim/api/comet"
+	"github.com/ningchengzeng/goim/internal/job/conf"
 
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 )
@@ -133,7 +133,7 @@ func (c *Comet) process(pushChan chan *comet.PushMsgReq, roomChan chan *comet.Br
 				Speed:   broadcastArg.Speed,
 			})
 			if err != nil {
-				log.Errorf("c.client.Broadcast(%s, reply) serverId:%s error(%v)", broadcastArg, c.serverID, err)
+				log.Error("c.client.Broadcast(%s, reply) serverId:%s error(%v)", broadcastArg, c.serverID, err)
 			}
 		case roomArg := <-roomChan:
 			_, err := c.client.BroadcastRoom(context.Background(), &comet.BroadcastRoomReq{
@@ -141,7 +141,7 @@ func (c *Comet) process(pushChan chan *comet.PushMsgReq, roomChan chan *comet.Br
 				Proto:  roomArg.Proto,
 			})
 			if err != nil {
-				log.Errorf("c.client.BroadcastRoom(%s, reply) serverId:%s error(%v)", roomArg, c.serverID, err)
+				log.Error("c.client.BroadcastRoom(%s, reply) serverId:%s error(%v)", roomArg, c.serverID, err)
 			}
 		case pushArg := <-pushChan:
 			_, err := c.client.PushMsg(context.Background(), &comet.PushMsgReq{
@@ -150,7 +150,7 @@ func (c *Comet) process(pushChan chan *comet.PushMsgReq, roomChan chan *comet.Br
 				ProtoOp: pushArg.ProtoOp,
 			})
 			if err != nil {
-				log.Errorf("c.client.PushMsg(%s, reply) serverId:%s error(%v)", pushArg, c.serverID, err)
+				log.Error("c.client.PushMsg(%s, reply) serverId:%s error(%v)", pushArg, c.serverID, err)
 			}
 		case <-c.ctx.Done():
 			return

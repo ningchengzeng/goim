@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/Terry-Mao/goim/pkg/bufio"
+	"github.com/ningchengzeng/goim/pkg/bufio"
 )
 
 const (

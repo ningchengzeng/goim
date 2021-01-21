@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Terry-Mao/goim/api/protocol"
-	"github.com/Terry-Mao/goim/internal/comet/conf"
-	"github.com/Terry-Mao/goim/pkg/bufio"
-	"github.com/Terry-Mao/goim/pkg/bytes"
-	xtime "github.com/Terry-Mao/goim/pkg/time"
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
+	"github.com/ningchengzeng/goim/api/protocol"
+	"github.com/ningchengzeng/goim/internal/comet/conf"
+	"github.com/ningchengzeng/goim/pkg/bufio"
+	"github.com/ningchengzeng/goim/pkg/bytes"
+	xtime "github.com/ningchengzeng/goim/pkg/time"
 )
 
 const (
@@ -28,14 +28,14 @@ func InitTCP(server *Server, addrs []string, accept int) (err error) {
 	)
 	for _, bind = range addrs {
 		if addr, err = net.ResolveTCPAddr("tcp", bind); err != nil {
-			log.Errorf("net.ResolveTCPAddr(tcp, %s) error(%v)", bind, err)
+			log.Error("net.ResolveTCPAddr(tcp, %s) error(%v)", bind, err)
 			return
 		}
 		if listener, err = net.ListenTCP("tcp", addr); err != nil {
-			log.Errorf("net.ListenTCP(tcp, %s) error(%v)", bind, err)
+			log.Error("net.ListenTCP(tcp, %s) error(%v)", bind, err)
 			return
 		}
-		log.Infof("start tcp listen: %s", bind)
+		log.Info("start tcp listen: %s", bind)
 		// split N core accept
 		for i := 0; i < accept; i++ {
 			go acceptTCP(server, listener)
@@ -56,19 +56,19 @@ func acceptTCP(server *Server, lis *net.TCPListener) {
 	for {
 		if conn, err = lis.AcceptTCP(); err != nil {
 			// if listener close then return
-			log.Errorf("listener.Accept(\"%s\") error(%v)", lis.Addr().String(), err)
+			log.Error("listener.Accept(\"%s\") error(%v)", lis.Addr().String(), err)
 			return
 		}
 		if err = conn.SetKeepAlive(server.c.TCP.KeepAlive); err != nil {
-			log.Errorf("conn.SetKeepAlive() error(%v)", err)
+			log.Error("conn.SetKeepAlive() error(%v)", err)
 			return
 		}
 		if err = conn.SetReadBuffer(server.c.TCP.Rcvbuf); err != nil {
-			log.Errorf("conn.SetReadBuffer() error(%v)", err)
+			log.Error("conn.SetReadBuffer() error(%v)", err)
 			return
 		}
 		if err = conn.SetWriteBuffer(server.c.TCP.Sndbuf); err != nil {
-			log.Errorf("conn.SetWriteBuffer() error(%v)", err)
+			log.Error("conn.SetWriteBuffer() error(%v)", err)
 			return
 		}
 		go serveTCP(server, conn, r)
@@ -89,7 +89,7 @@ func serveTCP(s *Server, conn *net.TCPConn, r int) {
 		rAddr = conn.RemoteAddr().String()
 	)
 	if conf.Conf.Debug {
-		log.Infof("start tcp serve \"%s\" with \"%s\"", lAddr, rAddr)
+		log.Info("start tcp serve \"%s\" with \"%s\"", lAddr, rAddr)
 	}
 	s.ServeTCP(conn, rp, wp, tr)
 }
@@ -120,7 +120,7 @@ func (s *Server) ServeTCP(conn *net.TCPConn, rp, wp *bytes.Pool, tr *xtime.Timer
 	step := 0
 	trd = tr.Add(time.Duration(s.c.Protocol.HandshakeTimeout), func() {
 		conn.Close()
-		log.Errorf("key: %s remoteIP: %s step: %d tcp handshake timeout", ch.Key, conn.RemoteAddr().String(), step)
+		log.Error("key: %s remoteIP: %s step: %d tcp handshake timeout", ch.Key, conn.RemoteAddr().String(), step)
 	})
 	ch.IP, _, _ = net.SplitHostPort(conn.RemoteAddr().String())
 	// must not setadv, only used in auth
@@ -131,7 +131,7 @@ func (s *Server) ServeTCP(conn *net.TCPConn, rp, wp *bytes.Pool, tr *xtime.Timer
 			b = s.Bucket(ch.Key)
 			err = b.Put(rid, ch)
 			if conf.Conf.Debug {
-				log.Infof("tcp connnected key:%s mid:%d proto:%+v", ch.Key, ch.Mid, p)
+				log.Info("tcp connnected key:%s mid:%d proto:%+v", ch.Key, ch.Mid, p)
 			}
 		}
 	}
@@ -141,7 +141,7 @@ func (s *Server) ServeTCP(conn *net.TCPConn, rp, wp *bytes.Pool, tr *xtime.Timer
 		rp.Put(rb)
 		wp.Put(wb)
 		tr.Del(trd)
-		log.Errorf("key: %s handshake failed error(%v)", ch.Key, err)
+		log.Error("key: %s handshake failed error(%v)", ch.Key, err)
 		return
 	}
 	trd.Key = ch.Key
@@ -178,7 +178,7 @@ func (s *Server) ServeTCP(conn *net.TCPConn, rp, wp *bytes.Pool, tr *xtime.Timer
 				}
 			}
 			if conf.Conf.Debug {
-				log.Infof("tcp heartbeat receive key:%s, mid:%d", ch.Key, ch.Mid)
+				log.Info("tcp heartbeat receive key:%s, mid:%d", ch.Key, ch.Mid)
 			}
 			step++
 		} else {
@@ -199,7 +199,7 @@ func (s *Server) ServeTCP(conn *net.TCPConn, rp, wp *bytes.Pool, tr *xtime.Timer
 		whitelist.Printf("key: %s server tcp error(%v)\n", ch.Key, err)
 	}
 	if err != nil && err != io.EOF && !strings.Contains(err.Error(), "closed") {
-		log.Errorf("key: %s server tcp failed error(%v)", ch.Key, err)
+		log.Error("key: %s server tcp failed error(%v)", ch.Key, err)
 	}
 	b.Del(ch)
 	tr.Del(trd)
@@ -207,13 +207,13 @@ func (s *Server) ServeTCP(conn *net.TCPConn, rp, wp *bytes.Pool, tr *xtime.Timer
 	conn.Close()
 	ch.Close()
 	if err = s.Disconnect(ctx, ch.Mid, ch.Key); err != nil {
-		log.Errorf("key: %s mid: %d operator do disconnect error(%v)", ch.Key, ch.Mid, err)
+		log.Error("key: %s mid: %d operator do disconnect error(%v)", ch.Key, ch.Mid, err)
 	}
 	if white {
 		whitelist.Printf("key: %s mid: %d disconnect error(%v)\n", ch.Key, ch.Mid, err)
 	}
 	if conf.Conf.Debug {
-		log.Infof("tcp disconnected key: %s mid: %d", ch.Key, ch.Mid)
+		log.Info("tcp disconnected key: %s mid: %d", ch.Key, ch.Mid)
 	}
 }
 
@@ -228,7 +228,7 @@ func (s *Server) dispatchTCP(conn *net.TCPConn, wr *bufio.Writer, wp *bytes.Pool
 		white  = whitelist.Contains(ch.Mid)
 	)
 	if conf.Conf.Debug {
-		log.Infof("key: %s start dispatch tcp goroutine", ch.Key)
+		log.Info("key: %s start dispatch tcp goroutine", ch.Key)
 	}
 	for {
 		if white {
@@ -239,7 +239,7 @@ func (s *Server) dispatchTCP(conn *net.TCPConn, wr *bufio.Writer, wp *bytes.Pool
 			whitelist.Printf("key: %s proto ready\n", ch.Key)
 		}
 		if conf.Conf.Debug {
-			log.Infof("key:%s dispatch msg:%v", ch.Key, *p)
+			log.Info("key:%s dispatch msg:%v", ch.Key, *p)
 		}
 		switch p {
 		case protocol.ProtoFinish:
@@ -247,7 +247,7 @@ func (s *Server) dispatchTCP(conn *net.TCPConn, wr *bufio.Writer, wp *bytes.Pool
 				whitelist.Printf("key: %s receive proto finish\n", ch.Key)
 			}
 			if conf.Conf.Debug {
-				log.Infof("key: %s wakeup exit dispatch goroutine", ch.Key)
+				log.Info("key: %s wakeup exit dispatch goroutine", ch.Key)
 			}
 			finish = true
 			goto failed
@@ -290,7 +290,7 @@ func (s *Server) dispatchTCP(conn *net.TCPConn, wr *bufio.Writer, wp *bytes.Pool
 				whitelist.Printf("key: %s write server proto%v\n", ch.Key, p)
 			}
 			if conf.Conf.Debug {
-				log.Infof("tcp sent a message key:%s mid:%d proto:%+v", ch.Key, ch.Mid, p)
+				log.Info("tcp sent a message key:%s mid:%d proto:%+v", ch.Key, ch.Mid, p)
 			}
 		}
 		if white {
@@ -309,7 +309,7 @@ failed:
 		whitelist.Printf("key: %s dispatch tcp error(%v)\n", ch.Key, err)
 	}
 	if err != nil {
-		log.Errorf("key: %s dispatch tcp error(%v)", ch.Key, err)
+		log.Error("key: %s dispatch tcp error(%v)", ch.Key, err)
 	}
 	conn.Close()
 	wp.Put(wb)
@@ -318,7 +318,7 @@ failed:
 		finish = (ch.Ready() == protocol.ProtoFinish)
 	}
 	if conf.Conf.Debug {
-		log.Infof("key: %s dispatch goroutine exit", ch.Key)
+		log.Info("key: %s dispatch goroutine exit", ch.Key)
 	}
 }
 
@@ -331,17 +331,17 @@ func (s *Server) authTCP(ctx context.Context, rr *bufio.Reader, wr *bufio.Writer
 		if p.Op == protocol.OpAuth {
 			break
 		} else {
-			log.Errorf("tcp request operation(%d) not auth", p.Op)
+			log.Error("tcp request operation(%d) not auth", p.Op)
 		}
 	}
 	if mid, key, rid, accepts, hb, err = s.Connect(ctx, p, ""); err != nil {
-		log.Errorf("authTCP.Connect(key:%v).err(%v)", key, err)
+		log.Error("authTCP.Connect(key:%v).err(%v)", key, err)
 		return
 	}
 	p.Op = protocol.OpAuthReply
 	p.Body = nil
 	if err = p.WriteTCP(wr); err != nil {
-		log.Errorf("authTCP.WriteTCP(key:%v).err(%v)", key, err)
+		log.Error("authTCP.WriteTCP(key:%v).err(%v)", key, err)
 		return
 	}
 	err = wr.Flush()

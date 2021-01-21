@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Terry-Mao/goim/api/protocol"
-	"github.com/Terry-Mao/goim/internal/comet/conf"
-	"github.com/Terry-Mao/goim/pkg/bytes"
-	xtime "github.com/Terry-Mao/goim/pkg/time"
-	"github.com/Terry-Mao/goim/pkg/websocket"
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
+	"github.com/ningchengzeng/goim/api/protocol"
+	"github.com/ningchengzeng/goim/internal/comet/conf"
+	"github.com/ningchengzeng/goim/pkg/bytes"
+	xtime "github.com/ningchengzeng/goim/pkg/time"
+	"github.com/ningchengzeng/goim/pkg/websocket"
 )
 
 // InitWebsocket listen all tcp.bind and start accept connections.
@@ -25,14 +25,14 @@ func InitWebsocket(server *Server, addrs []string, accept int) (err error) {
 	)
 	for _, bind = range addrs {
 		if addr, err = net.ResolveTCPAddr("tcp", bind); err != nil {
-			log.Errorf("net.ResolveTCPAddr(tcp, %s) error(%v)", bind, err)
+			log.Error("net.ResolveTCPAddr(tcp, %s) error(%v)", bind, err)
 			return
 		}
 		if listener, err = net.ListenTCP("tcp", addr); err != nil {
-			log.Errorf("net.ListenTCP(tcp, %s) error(%v)", bind, err)
+			log.Error("net.ListenTCP(tcp, %s) error(%v)", bind, err)
 			return
 		}
-		log.Infof("start ws listen: %s", bind)
+		log.Info("start ws listen: %s", bind)
 		// split N core accept
 		for i := 0; i < accept; i++ {
 			go acceptWebsocket(server, listener)
@@ -54,7 +54,7 @@ func InitWebsocketWithTLS(server *Server, addrs []string, certFile, privateFile 
 	for i := range certFiles {
 		cert, err = tls.LoadX509KeyPair(certFiles[i], privateFiles[i])
 		if err != nil {
-			log.Errorf("Error loading certificate. error(%v)", err)
+			log.Error("Error loading certificate. error(%v)", err)
 			return
 		}
 		certs = append(certs, cert)
@@ -63,10 +63,10 @@ func InitWebsocketWithTLS(server *Server, addrs []string, certFile, privateFile 
 	tlsCfg.BuildNameToCertificate()
 	for _, bind = range addrs {
 		if listener, err = tls.Listen("tcp", bind, tlsCfg); err != nil {
-			log.Errorf("net.ListenTCP(tcp, %s) error(%v)", bind, err)
+			log.Error("net.ListenTCP(tcp, %s) error(%v)", bind, err)
 			return
 		}
-		log.Infof("start wss listen: %s", bind)
+		log.Info("start wss listen: %s", bind)
 		// split N core accept
 		for i := 0; i < accept; i++ {
 			go acceptWebsocketWithTLS(server, listener)
@@ -87,19 +87,19 @@ func acceptWebsocket(server *Server, lis *net.TCPListener) {
 	for {
 		if conn, err = lis.AcceptTCP(); err != nil {
 			// if listener close then return
-			log.Errorf("listener.Accept(%s) error(%v)", lis.Addr().String(), err)
+			log.Error("listener.Accept(%s) error(%v)", lis.Addr().String(), err)
 			return
 		}
 		if err = conn.SetKeepAlive(server.c.TCP.KeepAlive); err != nil {
-			log.Errorf("conn.SetKeepAlive() error(%v)", err)
+			log.Error("conn.SetKeepAlive() error(%v)", err)
 			return
 		}
 		if err = conn.SetReadBuffer(server.c.TCP.Rcvbuf); err != nil {
-			log.Errorf("conn.SetReadBuffer() error(%v)", err)
+			log.Error("conn.SetReadBuffer() error(%v)", err)
 			return
 		}
 		if err = conn.SetWriteBuffer(server.c.TCP.Sndbuf); err != nil {
-			log.Errorf("conn.SetWriteBuffer() error(%v)", err)
+			log.Error("conn.SetWriteBuffer() error(%v)", err)
 			return
 		}
 		go serveWebsocket(server, conn, r)
@@ -121,7 +121,7 @@ func acceptWebsocketWithTLS(server *Server, lis net.Listener) {
 	for {
 		if conn, err = lis.Accept(); err != nil {
 			// if listener close then return
-			log.Errorf("listener.Accept(\"%s\") error(%v)", lis.Addr().String(), err)
+			log.Error("listener.Accept(\"%s\") error(%v)", lis.Addr().String(), err)
 			return
 		}
 		go serveWebsocket(server, conn, r)
@@ -142,7 +142,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 		// ip addr
 		lAddr := conn.LocalAddr().String()
 		rAddr := conn.RemoteAddr().String()
-		log.Infof("start tcp serve \"%s\" with \"%s\"", lAddr, rAddr)
+		log.Info("start tcp serve \"%s\" with \"%s\"", lAddr, rAddr)
 	}
 	s.ServeWebsocket(conn, rp, wp, tr)
 }
@@ -176,7 +176,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 		// NOTE: fix close block for tls
 		_ = conn.SetDeadline(time.Now().Add(time.Millisecond * 100))
 		_ = conn.Close()
-		log.Errorf("key: %s remoteIP: %s step: %d ws handshake timeout", ch.Key, conn.RemoteAddr().String(), step)
+		log.Error("key: %s remoteIP: %s step: %d ws handshake timeout", ch.Key, conn.RemoteAddr().String(), step)
 	})
 	// websocket
 	ch.IP, _, _ = net.SplitHostPort(conn.RemoteAddr().String())
@@ -186,7 +186,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 		tr.Del(trd)
 		rp.Put(rb)
 		if err != io.EOF {
-			log.Errorf("http.ReadRequest(rr) error(%v)", err)
+			log.Error("http.ReadRequest(rr) error(%v)", err)
 		}
 		return
 	}
@@ -200,7 +200,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 		rp.Put(rb)
 		wp.Put(wb)
 		if err != io.EOF {
-			log.Errorf("websocket.NewServerConn error(%v)", err)
+			log.Error("websocket.NewServerConn error(%v)", err)
 		}
 		return
 	}
@@ -212,7 +212,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 			b = s.Bucket(ch.Key)
 			err = b.Put(rid, ch)
 			if conf.Conf.Debug {
-				log.Infof("websocket connnected key:%s mid:%d proto:%+v", ch.Key, ch.Mid, p)
+				log.Info("websocket connnected key:%s mid:%d proto:%+v", ch.Key, ch.Mid, p)
 			}
 		}
 	}
@@ -223,7 +223,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 		wp.Put(wb)
 		tr.Del(trd)
 		if err != io.EOF && err != websocket.ErrMessageClose {
-			log.Errorf("key: %s remoteIP: %s step: %d ws handshake failed error(%v)", ch.Key, conn.RemoteAddr().String(), step, err)
+			log.Error("key: %s remoteIP: %s step: %d ws handshake failed error(%v)", ch.Key, conn.RemoteAddr().String(), step, err)
 		}
 		return
 	}
@@ -261,7 +261,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 				}
 			}
 			if conf.Conf.Debug {
-				log.Infof("websocket heartbeat receive key:%s, mid:%d", ch.Key, ch.Mid)
+				log.Info("websocket heartbeat receive key:%s, mid:%d", ch.Key, ch.Mid)
 			}
 			step++
 		} else {
@@ -282,7 +282,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 		whitelist.Printf("key: %s server tcp error(%v)\n", ch.Key, err)
 	}
 	if err != nil && err != io.EOF && err != websocket.ErrMessageClose && !strings.Contains(err.Error(), "closed") {
-		log.Errorf("key: %s server ws failed error(%v)", ch.Key, err)
+		log.Error("key: %s server ws failed error(%v)", ch.Key, err)
 	}
 	b.Del(ch)
 	tr.Del(trd)
@@ -290,13 +290,13 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 	ch.Close()
 	rp.Put(rb)
 	if err = s.Disconnect(ctx, ch.Mid, ch.Key); err != nil {
-		log.Errorf("key: %s operator do disconnect error(%v)", ch.Key, err)
+		log.Error("key: %s operator do disconnect error(%v)", ch.Key, err)
 	}
 	if white {
 		whitelist.Printf("key: %s disconnect error(%v)\n", ch.Key, err)
 	}
 	if conf.Conf.Debug {
-		log.Infof("websocket disconnected key: %s mid:%d", ch.Key, ch.Mid)
+		log.Info("websocket disconnected key: %s mid:%d", ch.Key, ch.Mid)
 	}
 }
 
@@ -311,7 +311,7 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 		white  = whitelist.Contains(ch.Mid)
 	)
 	if conf.Conf.Debug {
-		log.Infof("key: %s start dispatch tcp goroutine", ch.Key)
+		log.Info("key: %s start dispatch tcp goroutine", ch.Key)
 	}
 	for {
 		if white {
@@ -322,7 +322,7 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 			whitelist.Printf("key: %s proto ready\n", ch.Key)
 		}
 		if conf.Conf.Debug {
-			log.Infof("key:%s dispatch msg:%s", ch.Key, p.Body)
+			log.Info("key:%s dispatch msg:%s", ch.Key, p.Body)
 		}
 		switch p {
 		case protocol.ProtoFinish:
@@ -330,7 +330,7 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 				whitelist.Printf("key: %s receive proto finish\n", ch.Key)
 			}
 			if conf.Conf.Debug {
-				log.Infof("key: %s wakeup exit dispatch goroutine", ch.Key)
+				log.Info("key: %s wakeup exit dispatch goroutine", ch.Key)
 			}
 			finish = true
 			goto failed
@@ -372,7 +372,7 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 				whitelist.Printf("key: %s write server proto%v\n", ch.Key, p)
 			}
 			if conf.Conf.Debug {
-				log.Infof("websocket sent a message key:%s mid:%d proto:%+v", ch.Key, ch.Mid, p)
+				log.Info("websocket sent a message key:%s mid:%d proto:%+v", ch.Key, ch.Mid, p)
 			}
 		}
 		if white {
@@ -391,7 +391,7 @@ failed:
 		whitelist.Printf("key: %s dispatch tcp error(%v)\n", ch.Key, err)
 	}
 	if err != nil && err != io.EOF && err != websocket.ErrMessageClose {
-		log.Errorf("key: %s dispatch ws error(%v)", ch.Key, err)
+		log.Error("key: %s dispatch ws error(%v)", ch.Key, err)
 	}
 	ws.Close()
 	wp.Put(wb)
@@ -400,7 +400,7 @@ failed:
 		finish = (ch.Ready() == protocol.ProtoFinish)
 	}
 	if conf.Conf.Debug {
-		log.Infof("key: %s dispatch goroutine exit", ch.Key)
+		log.Info("key: %s dispatch goroutine exit", ch.Key)
 	}
 }
 
@@ -413,7 +413,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *proto
 		if p.Op == protocol.OpAuth {
 			break
 		} else {
-			log.Errorf("ws request operation(%d) not auth", p.Op)
+			log.Error("ws request operation(%d) not auth", p.Op)
 		}
 	}
 	if mid, key, rid, accepts, hb, err = s.Connect(ctx, p, cookie); err != nil {

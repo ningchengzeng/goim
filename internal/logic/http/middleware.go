@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
 )
 
 func loggerHandler(c *gin.Context) {
@@ -29,7 +29,7 @@ func loggerHandler(c *gin.Context) {
 	if raw != "" {
 		path = path + "?" + raw
 	}
-	log.Infof("METHOD:%s | PATH:%s | CODE:%d | IP:%s | TIME:%d | ECODE:%d", method, path, statusCode, clientIP, latency/time.Millisecond, ecode)
+	log.Info("METHOD:%s | PATH:%s | CODE:%d | IP:%s | TIME:%d | ECODE:%d", method, path, statusCode, clientIP, latency/time.Millisecond, ecode)
 }
 
 func recoverHandler(c *gin.Context) {

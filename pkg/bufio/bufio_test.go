@@ -15,7 +15,7 @@ import (
 	"testing/iotest"
 	"time"
 
-	. "github.com/Terry-Mao/goim/pkg/bufio"
+	. "github.com/ningchengzeng/goim/pkg/bufio"
 )
 
 // Reads from a reader and rot13s the result.
@@ -65,12 +65,12 @@ func TestReaderSimple(t *testing.T) {
 	data := "hello world"
 	b := NewReader(strings.NewReader(data))
 	if s := readBytes(b); s != "hello world" {
-		t.Errorf("simple hello world test failed: got %q", s)
+		t.Error("simple hello world test failed: got %q", s)
 	}
 
 	b = NewReader(newRot13Reader(strings.NewReader(data)))
 	if s := readBytes(b); s != "uryyb jbeyq" {
-		t.Errorf("rot13 hello world test failed: got %q", s)
+		t.Error("rot13 hello world test failed: got %q", s)
 	}
 }
 
@@ -145,7 +145,7 @@ func TestReader(t *testing.T) {
 					buf := NewReaderSize(read, bufsize)
 					s := bufreader.fn(buf)
 					if s != text {
-						t.Errorf("reader=%s fn=%s bufsize=%d want=%q got=%q",
+						t.Error("reader=%s fn=%s bufsize=%d want=%q got=%q",
 							readmaker.name, bufreader.name, bufsize, text, s)
 					}
 				}
@@ -203,22 +203,22 @@ func TestWriter(t *testing.T) {
 			context := fmt.Sprintf("nwrite=%d bufsize=%d", nwrite, bs)
 			n, e1 := buf.Write(data[0:nwrite])
 			if e1 != nil || n != nwrite {
-				t.Errorf("%s: buf.Write %d = %d, %v", context, nwrite, n, e1)
+				t.Error("%s: buf.Write %d = %d, %v", context, nwrite, n, e1)
 				continue
 			}
 			if e := buf.Flush(); e != nil {
-				t.Errorf("%s: buf.Flush = %v", context, e)
+				t.Error("%s: buf.Flush = %v", context, e)
 			}
 
 			written := w.Bytes()
 			if len(written) != nwrite {
-				t.Errorf("%s: %d bytes written", context, len(written))
+				t.Error("%s: %d bytes written", context, len(written))
 			}
 			for l := 0; l < len(written); l++ {
 				if written[i] != data[i] {
-					t.Errorf("wrong bytes written")
-					t.Errorf("want=%q", data[0:len(written)])
-					t.Errorf("have=%q", written)
+					t.Error("wrong bytes written")
+					t.Error("want=%q", data[0:len(written)])
+					t.Error("have=%q", written)
 				}
 			}
 		}
@@ -251,14 +251,14 @@ func TestWriteErrors(t *testing.T) {
 		buf := NewWriter(w)
 		_, e := buf.Write([]byte("hello world"))
 		if e != nil {
-			t.Errorf("Write hello to %v: %v", w, e)
+			t.Error("Write hello to %v: %v", w, e)
 			continue
 		}
 		// Two flushes, to verify the error is sticky.
 		for i := 0; i < 2; i++ {
 			e = buf.Flush()
 			if e != w.expect {
-				t.Errorf("Flush %d/2 %v: got %v, wanted %v", i+1, w, e, w.expect)
+				t.Error("Flush %d/2 %v: got %v, wanted %v", i+1, w, e, w.expect)
 			}
 		}
 	}
@@ -308,7 +308,7 @@ func TestWriteString(t *testing.T) {
 	}
 	s := "01234567890abcdefghijklmnopqrstuvwxyz"
 	if buf.String() != s {
-		t.Errorf("WriteString wants %q gets %q", s, buf.String())
+		t.Error("WriteString wants %q gets %q", s, buf.String())
 	}
 }
 
@@ -317,11 +317,11 @@ func TestBufferFull(t *testing.T) {
 	buf := NewReaderSize(strings.NewReader(longString), minReadBufferSize)
 	line, err := buf.ReadSlice('!')
 	if string(line) != "And now, hello, " || err != ErrBufferFull {
-		t.Errorf("first ReadSlice(,) = %q, %v", line, err)
+		t.Error("first ReadSlice(,) = %q, %v", line, err)
 	}
 	line, err = buf.ReadSlice('!')
 	if string(line) != "world!" || err != nil {
-		t.Errorf("second ReadSlice(,) = %q, %v", line, err)
+		t.Error("second ReadSlice(,) = %q, %v", line, err)
 	}
 }
 
@@ -369,10 +369,10 @@ func TestPeek(t *testing.T) {
 	// Test for issue 3022, not exposing a reader's error on a successful Peek.
 	buf = NewReaderSize(dataAndEOFReader("abcd"), 32)
 	if s, err := buf.Peek(2); string(s) != "ab" || err != nil {
-		t.Errorf(`Peek(2) on "abcd", EOF = %q, %v; want "ab", nil`, string(s), err)
+		t.Error(`Peek(2) on "abcd", EOF = %q, %v; want "ab", nil`, string(s), err)
 	}
 	if s, err := buf.Peek(4); string(s) != "abcd" || err != nil {
-		t.Errorf(`Peek(4) on "abcd", EOF = %q, %v; want "abcd", nil`, string(s), err)
+		t.Error(`Peek(4) on "abcd", EOF = %q, %v; want "abcd", nil`, string(s), err)
 	}
 	if n, err := buf.Read(p[0:5]); string(p[0:n]) != "abcd" || err != nil {
 		t.Fatalf("Read after peek = %q, %v; want abcd, EOF", p[0:n], err)
@@ -423,10 +423,10 @@ func testReadLine(t *testing.T, input []byte) {
 		for {
 			line, isPrefix, err := l.ReadLine()
 			if len(line) > 0 && err != nil {
-				t.Errorf("ReadLine returned both data and error: %s", err)
+				t.Error("ReadLine returned both data and error: %s", err)
 			}
 			if isPrefix {
-				t.Errorf("ReadLine returned prefix")
+				t.Error("ReadLine returned prefix")
 			}
 			if err != nil {
 				if err != io.EOF {
@@ -435,12 +435,12 @@ func testReadLine(t *testing.T, input []byte) {
 				break
 			}
 			if want := testOutput[done : done+len(line)]; !bytes.Equal(want, line) {
-				t.Errorf("Bad line at stride %d: want: %x got: %x", stride, want, line)
+				t.Error("Bad line at stride %d: want: %x got: %x", stride, want, line)
 			}
 			done += len(line)
 		}
 		if done != len(testOutput) {
-			t.Errorf("ReadLine didn't return everything: got: %d, want: %d (stride: %d)", done, len(testOutput), stride)
+			t.Error("ReadLine didn't return everything: got: %d, want: %d (stride: %d)", done, len(testOutput), stride)
 		}
 	}
 }
@@ -459,21 +459,21 @@ func TestLineTooLong(t *testing.T) {
 	l := NewReaderSize(buf, minReadBufferSize)
 	line, isPrefix, err := l.ReadLine()
 	if !isPrefix || !bytes.Equal(line, data[:minReadBufferSize]) || err != nil {
-		t.Errorf("bad result for first line: got %q want %q %v", line, data[:minReadBufferSize], err)
+		t.Error("bad result for first line: got %q want %q %v", line, data[:minReadBufferSize], err)
 	}
 	data = data[len(line):]
 	line, isPrefix, err = l.ReadLine()
 	if !isPrefix || !bytes.Equal(line, data[:minReadBufferSize]) || err != nil {
-		t.Errorf("bad result for second line: got %q want %q %v", line, data[:minReadBufferSize], err)
+		t.Error("bad result for second line: got %q want %q %v", line, data[:minReadBufferSize], err)
 	}
 	data = data[len(line):]
 	line, isPrefix, err = l.ReadLine()
 	if isPrefix || !bytes.Equal(line, data[:minReadBufferSize/2]) || err != nil {
-		t.Errorf("bad result for third line: got %q want %q %v", line, data[:minReadBufferSize/2], err)
+		t.Error("bad result for third line: got %q want %q %v", line, data[:minReadBufferSize/2], err)
 	}
 	line, isPrefix, err = l.ReadLine()
 	if isPrefix || err == nil {
-		t.Errorf("expected no more lines: %x %s", line, err)
+		t.Error("expected no more lines: %x %s", line, err)
 	}
 }
 
@@ -486,14 +486,14 @@ func TestReadAfterLines(t *testing.T) {
 	l := NewReaderSize(inbuf, maxLineLength)
 	line, isPrefix, err := l.ReadLine()
 	if isPrefix || err != nil || string(line) != line1 {
-		t.Errorf("bad result for first line: isPrefix=%v err=%v line=%q", isPrefix, err, string(line))
+		t.Error("bad result for first line: isPrefix=%v err=%v line=%q", isPrefix, err, string(line))
 	}
 	n, err := io.Copy(outbuf, l)
 	if int(n) != len(restData) || err != nil {
-		t.Errorf("bad result for Read: n=%d err=%v", n, err)
+		t.Error("bad result for Read: n=%d err=%v", n, err)
 	}
 	if outbuf.String() != restData {
-		t.Errorf("bad result for Read: got %q; expected %q", outbuf.String(), restData)
+		t.Error("bad result for Read: got %q; expected %q", outbuf.String(), restData)
 	}
 }
 
@@ -501,7 +501,7 @@ func TestReadEmptyBuffer(t *testing.T) {
 	l := NewReaderSize(new(bytes.Buffer), minReadBufferSize)
 	line, isPrefix, err := l.ReadLine()
 	if err != io.EOF {
-		t.Errorf("expected EOF from ReadLine, got '%s' %t %s", line, isPrefix, err)
+		t.Error("expected EOF from ReadLine, got '%s' %t %s", line, isPrefix, err)
 	}
 }
 
@@ -515,7 +515,7 @@ func TestLinesAfterRead(t *testing.T) {
 
 	line, isPrefix, err := l.ReadLine()
 	if err != io.EOF {
-		t.Errorf("expected EOF from ReadLine, got '%s' %t %s", line, isPrefix, err)
+		t.Error("expected EOF from ReadLine, got '%s' %t %s", line, isPrefix, err)
 	}
 }
 
@@ -566,15 +566,15 @@ func testReadLineNewlines(t *testing.T, input string, expect []readLineResult) {
 	for i, e := range expect {
 		line, isPrefix, err := b.ReadLine()
 		if !bytes.Equal(line, e.line) {
-			t.Errorf("%q call %d, line == %q, want %q", input, i, line, e.line)
+			t.Error("%q call %d, line == %q, want %q", input, i, line, e.line)
 			return
 		}
 		if isPrefix != e.isPrefix {
-			t.Errorf("%q call %d, isPrefix == %v, want %v", input, i, isPrefix, e.isPrefix)
+			t.Error("%q call %d, isPrefix == %v, want %v", input, i, isPrefix, e.isPrefix)
 			return
 		}
 		if err != e.err {
-			t.Errorf("%q call %d, err == %v, want %v", input, i, err, e.err)
+			t.Error("%q call %d, err == %v, want %v", input, i, err, e.err)
 			return
 		}
 	}
@@ -694,7 +694,7 @@ func TestReaderClearError(t *testing.T) {
 		t.Fatalf("3rd Read with buffer = %v; want nil", err)
 	}
 	if r.nread != 2 {
-		t.Errorf("num reads = %d; want 2", r.nread)
+		t.Error("num reads = %d; want 2", r.nread)
 	}
 }
 
@@ -703,7 +703,7 @@ func TestReaderReset(t *testing.T) {
 	buf := make([]byte, 3)
 	_, _ = r.Read(buf)
 	if string(buf) != "foo" {
-		t.Errorf("buf = %q; want foo", buf)
+		t.Error("buf = %q; want foo", buf)
 	}
 	r.Reset(strings.NewReader("bar bar"))
 	all, err := ioutil.ReadAll(r)
@@ -711,7 +711,7 @@ func TestReaderReset(t *testing.T) {
 		t.Fatal(err)
 	}
 	if string(all) != "bar bar" {
-		t.Errorf("ReadAll = %q; want bar bar", all)
+		t.Error("ReadAll = %q; want bar bar", all)
 	}
 }
 
@@ -723,10 +723,10 @@ func TestWriterReset(t *testing.T) {
 	_, _ = w.WriteString("bar")
 	_ = w.Flush()
 	if buf1.String() != "" {
-		t.Errorf("buf1 = %q; want empty", buf1.String())
+		t.Error("buf1 = %q; want empty", buf1.String())
 	}
 	if buf2.String() != "bar" {
-		t.Errorf("buf2 = %q; want bar", buf2.String())
+		t.Error("buf2 = %q; want bar", buf2.String())
 	}
 }
 
@@ -839,21 +839,21 @@ func TestReaderDiscard(t *testing.T) {
 		if tt.peekSize > 0 {
 			peekBuf, err := br.Peek(tt.peekSize)
 			if err != nil {
-				t.Errorf("%s: Peek(%d): %v", tt.name, tt.peekSize, err)
+				t.Error("%s: Peek(%d): %v", tt.name, tt.peekSize, err)
 				continue
 			}
 			if len(peekBuf) != tt.peekSize {
-				t.Errorf("%s: len(Peek(%d)) = %v; want %v", tt.name, tt.peekSize, len(peekBuf), tt.peekSize)
+				t.Error("%s: len(Peek(%d)) = %v; want %v", tt.name, tt.peekSize, len(peekBuf), tt.peekSize)
 				continue
 			}
 		}
 		discarded, err := br.Discard(tt.n)
 		if ge, we := fmt.Sprint(err), fmt.Sprint(tt.wantErr); discarded != tt.want || ge != we {
-			t.Errorf("%s: Discard(%d) = (%v, %v); want (%v, %v)", tt.name, tt.n, discarded, ge, tt.want, we)
+			t.Error("%s: Discard(%d) = (%v, %v); want (%v, %v)", tt.name, tt.n, discarded, ge, tt.want, we)
 			continue
 		}
 		if bn := br.Buffered(); bn != tt.wantBuffered {
-			t.Errorf("%s: after Discard, Buffered = %d; want %d", tt.name, bn, tt.wantBuffered)
+			t.Error("%s: after Discard, Buffered = %d; want %d", tt.name, bn, tt.wantBuffered)
 		}
 	}
 

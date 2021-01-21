@@ -16,6 +16,13 @@
     wsPort = 3102
     wssPort = 3103
     regionWeight = 1.6
+    
+# 本可用区zone(一般指机房)标识
+[env]
+    region = "sh"
+    zone = "sh001"
+    deployEnv = "dev"
+    weight = 10
 
 [backoff]
     maxDelay = 300
@@ -38,9 +45,9 @@
 	readTimeout = "1s"
 	writeTimeout = "1s"
 
-[kafka]
-    topic = "goim-push-topic"
-    brokers = ["127.0.0.1:9092"]
+[nsq]
+    topic = "goim-topic"
+    address = "127.0.0.1:4150"
 
 [redis]
     network = "tcp"

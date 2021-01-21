@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Terry-Mao/goim/api/comet"
-	pb "github.com/Terry-Mao/goim/api/logic"
-	"github.com/Terry-Mao/goim/api/protocol"
-	"github.com/Terry-Mao/goim/pkg/bytes"
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
+	"github.com/ningchengzeng/goim/api/comet"
+	pb "github.com/ningchengzeng/goim/api/logic"
+	"github.com/ningchengzeng/goim/api/protocol"
+	"github.com/ningchengzeng/goim/pkg/bytes"
 )
 
 func (j *Job) push(ctx context.Context, pushMsg *pb.PushMsg) (err error) {
@@ -43,9 +43,9 @@ func (j *Job) pushKeys(operation int32, serverID string, subKeys []string, body 
 	}
 	if c, ok := j.cometServers[serverID]; ok {
 		if err = c.Push(&args); err != nil {
-			log.Errorf("c.Push(%v) serverID:%s error(%v)", args, serverID, err)
+			log.Error("c.Push(%v) serverID:%s error(%v)", args, serverID, err)
 		}
-		log.Infof("pushKey:%s comets:%d", serverID, len(j.cometServers))
+		log.Info("pushKey:%s comets:%d", serverID, len(j.cometServers))
 	}
 	return
 }
@@ -70,10 +70,10 @@ func (j *Job) broadcast(operation int32, body []byte, speed int32) (err error) {
 	}
 	for serverID, c := range comets {
 		if err = c.Broadcast(&args); err != nil {
-			log.Errorf("c.Broadcast(%v) serverID:%s error(%v)", args, serverID, err)
+			log.Error("c.Broadcast(%v) serverID:%s error(%v)", args, serverID, err)
 		}
 	}
-	log.Infof("broadcast comets:%d", len(comets))
+	log.Info("broadcast comets:%d", len(comets))
 	return
 }
 
@@ -90,9 +90,9 @@ func (j *Job) broadcastRoomRawBytes(roomID string, body []byte) (err error) {
 	comets := j.cometServers
 	for serverID, c := range comets {
 		if err = c.BroadcastRoom(&args); err != nil {
-			log.Errorf("c.BroadcastRoom(%v) roomID:%s serverID:%s error(%v)", args, roomID, serverID, err)
+			log.Error("c.BroadcastRoom(%v) roomID:%s serverID:%s error(%v)", args, roomID, serverID, err)
 		}
 	}
-	log.Infof("broadcastRoom comets:%d", len(comets))
+	log.Info("broadcastRoom comets:%d", len(comets))
 	return
 }

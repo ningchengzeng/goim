@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/net/websocket"
 
-	"github.com/Terry-Mao/goim/pkg/bufio"
+	"github.com/ningchengzeng/goim/pkg/bufio"
 )
 
 func TestServer(t *testing.T) {

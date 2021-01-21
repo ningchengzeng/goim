@@ -1,6 +1,16 @@
+debug = true
+
 # This is a TOML document. Boom
 [discovery]
     nodes = ["127.0.0.1:7171"]
+
+# 本可用区zone(一般指机房)标识
+[env]
+    region = "sh"
+    zone = "sh001"
+    deployEnv = "dev"
+    weight = 10
+    addrs = ["127.0.0.1"]
 
 [rpcServer]
     addr = ":3109"

@@ -19,7 +19,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
 )
 
 const (
@@ -111,7 +111,7 @@ func startClient(key int64) {
 	// connnect to server
 	conn, err := net.Dial("tcp", os.Args[3])
 	if err != nil {
-		log.Errorf("net.Dial(%s) error(%v)", os.Args[3], err)
+		log.Error("net.Dial(%s) error(%v)", os.Args[3], err)
 		return
 	}
 	seq := int32(0)
@@ -130,14 +130,14 @@ func startClient(key int64) {
 	proto.Seq = seq
 	proto.Body, _ = json.Marshal(authToken)
 	if err = tcpWriteProto(wr, proto); err != nil {
-		log.Errorf("tcpWriteProto() error(%v)", err)
+		log.Error("tcpWriteProto() error(%v)", err)
 		return
 	}
 	if err = tcpReadProto(rd, proto); err != nil {
-		log.Errorf("tcpReadProto() error(%v)", err)
+		log.Error("tcpReadProto() error(%v)", err)
 		return
 	}
-	log.Infof("key:%d auth ok, proto: %v", key, proto)
+	log.Info("key:%d auth ok, proto: %v", key, proto)
 	seq++
 	// writer
 	go func() {
@@ -148,10 +148,10 @@ func startClient(key int64) {
 			hbProto.Seq = seq
 			hbProto.Body = nil
 			if err = tcpWriteProto(wr, hbProto); err != nil {
-				log.Errorf("key:%d tcpWriteProto() error(%v)", key, err)
+				log.Error("key:%d tcpWriteProto() error(%v)", key, err)
 				return
 			}
-			log.Infof("key:%d Write heartbeat", key)
+			log.Info("key:%d Write heartbeat", key)
 			time.Sleep(heart)
 			seq++
 			select {
@@ -164,21 +164,21 @@ func startClient(key int64) {
 	// reader
 	for {
 		if err = tcpReadProto(rd, proto); err != nil {
-			log.Errorf("key:%d tcpReadProto() error(%v)", key, err)
+			log.Error("key:%d tcpReadProto() error(%v)", key, err)
 			quit <- true
 			return
 		}
 		if proto.Operation == opAuthReply {
-			log.Infof("key:%d auth success", key)
+			log.Info("key:%d auth success", key)
 		} else if proto.Operation == opHeartbeatReply {
-			log.Infof("key:%d receive heartbeat", key)
+			log.Info("key:%d receive heartbeat", key)
 			if err = conn.SetReadDeadline(time.Now().Add(heart + 60*time.Second)); err != nil {
-				log.Errorf("conn.SetReadDeadline() error(%v)", err)
+				log.Error("conn.SetReadDeadline() error(%v)", err)
 				quit <- true
 				return
 			}
 		} else {
-			log.Infof("key:%d op:%d msg: %s", key, proto.Operation, string(proto.Body))
+			log.Info("key:%d op:%d msg: %s", key, proto.Operation, string(proto.Body))
 			atomic.AddInt64(&countDown, 1)
 		}
 	}

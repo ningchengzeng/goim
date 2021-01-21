@@ -4,7 +4,7 @@ import (
 	"sync"
 	itime "time"
 
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
 )
 
 const (
@@ -131,11 +131,11 @@ func (t *Timer) add(td *TimerData) {
 		d = td.Delay()
 		t.signal.Reset(d)
 		if Debug {
-			log.Infof("timer: add reset delay %d ms", int64(d)/int64(itime.Millisecond))
+			log.Info("timer: add reset delay %d ms", int64(d)/int64(itime.Millisecond))
 		}
 	}
 	if Debug {
-		log.Infof("timer: push item key: %s, expire: %s, index: %d", td.Key, td.ExpireString(), td.index)
+		log.Info("timer: push item key: %s, expire: %s, index: %d", td.Key, td.ExpireString(), td.index)
 	}
 }
 
@@ -147,7 +147,7 @@ func (t *Timer) del(td *TimerData) {
 	if i < 0 || i > last || t.timers[i] != td {
 		// already remove, usually by expire
 		if Debug {
-			log.Infof("timer del i: %d, last: %d, %p", i, last, td)
+			log.Info("timer del i: %d, last: %d, %p", i, last, td)
 		}
 		return
 	}
@@ -160,7 +160,7 @@ func (t *Timer) del(td *TimerData) {
 	t.timers[last].index = -1 // for safety
 	t.timers = t.timers[:last]
 	if Debug {
-		log.Infof("timer: remove item key: %s, expire: %s, index: %d", td.Key, td.ExpireString(), td.index)
+		log.Info("timer: remove item key: %s, expire: %s, index: %d", td.Key, td.ExpireString(), td.index)
 	}
 }
 
@@ -208,10 +208,10 @@ func (t *Timer) expire() {
 		t.del(td)
 		t.lock.Unlock()
 		if fn == nil {
-			log.Warning("expire timer no fn")
+			log.Warn("expire timer no fn")
 		} else {
 			if Debug {
-				log.Infof("timer key: %s, expire: %s, index: %d expired, call fn", td.Key, td.ExpireString(), td.index)
+				log.Info("timer key: %s, expire: %s, index: %d expired, call fn", td.Key, td.ExpireString(), td.index)
 			}
 			fn()
 		}
@@ -219,7 +219,7 @@ func (t *Timer) expire() {
 	}
 	t.signal.Reset(d)
 	if Debug {
-		log.Infof("timer: expier reset delay %d ms", int64(d)/int64(itime.Millisecond))
+		log.Info("timer: expier reset delay %d ms", int64(d)/int64(itime.Millisecond))
 	}
 	t.lock.Unlock()
 }

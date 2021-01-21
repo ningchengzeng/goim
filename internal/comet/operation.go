@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/Terry-Mao/goim/api/logic"
-	"github.com/Terry-Mao/goim/api/protocol"
-	"github.com/Terry-Mao/goim/pkg/strings"
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
+	"github.com/ningchengzeng/goim/api/logic"
+	"github.com/ningchengzeng/goim/api/protocol"
+	"github.com/ningchengzeng/goim/pkg/strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/encoding/gzip"
@@ -69,7 +69,7 @@ func (s *Server) Operate(ctx context.Context, p *protocol.Proto, ch *Channel, b 
 	switch p.Op {
 	case protocol.OpChangeRoom:
 		if err := b.ChangeRoom(string(p.Body), ch); err != nil {
-			log.Errorf("b.ChangeRoom(%s) error(%v)", p.Body, err)
+			log.Error("b.ChangeRoom(%s) error(%v)", p.Body, err)
 		}
 		p.Op = protocol.OpChangeRoomReply
 	case protocol.OpSub:
@@ -85,7 +85,7 @@ func (s *Server) Operate(ctx context.Context, p *protocol.Proto, ch *Channel, b 
 	default:
 		// TODO ack ok&failed
 		if err := s.Receive(ctx, ch.Mid, p); err != nil {
-			log.Errorf("s.Report(%d) op:%d error(%v)", ch.Mid, p.Op, err)
+			log.Error("s.Report(%d) op:%d error(%v)", ch.Mid, p.Op, err)
 		}
 		p.Body = nil
 	}

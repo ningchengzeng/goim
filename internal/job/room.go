@@ -4,10 +4,10 @@ import (
 	"errors"
 	"time"
 
-	"github.com/Terry-Mao/goim/api/protocol"
-	"github.com/Terry-Mao/goim/internal/job/conf"
-	"github.com/Terry-Mao/goim/pkg/bytes"
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
+	"github.com/ningchengzeng/goim/api/protocol"
+	"github.com/ningchengzeng/goim/internal/job/conf"
+	"github.com/ningchengzeng/goim/pkg/bytes"
 )
 
 var (
@@ -64,7 +64,7 @@ func (r *Room) pushproc(batch int, sigTime time.Duration) {
 		p    *protocol.Proto
 		buf  = bytes.NewWriterSize(int(protocol.MaxBodySize))
 	)
-	log.Infof("start room:%s goroutine", r.id)
+	log.Info("start room:%s goroutine", r.id)
 	td := time.AfterFunc(sigTime, func() {
 		select {
 		case r.proto <- roomReadyProto:
@@ -104,7 +104,7 @@ func (r *Room) pushproc(batch int, sigTime time.Duration) {
 		}
 	}
 	r.job.delRoom(r.id)
-	log.Infof("room:%s goroutine exit", r.id)
+	log.Info("room:%s goroutine exit", r.id)
 }
 
 func (j *Job) delRoom(roomID string) {
@@ -124,7 +124,7 @@ func (j *Job) getRoom(roomID string) *Room {
 			j.rooms[roomID] = room
 		}
 		j.roomsMutex.Unlock()
-		log.Infof("new a room:%s active:%d", roomID, len(j.rooms))
+		log.Info("new a room:%s active:%d", roomID, len(j.rooms))
 	}
 	return room
 }

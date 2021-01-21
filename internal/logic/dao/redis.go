@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/Terry-Mao/goim/internal/logic/model"
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
 	"github.com/gomodule/redigo/redis"
+	"github.com/ningchengzeng/goim/internal/logic/model"
 
 	"github.com/zhenjl/cityhash"
 )
@@ -49,30 +49,30 @@ func (d *Dao) AddMapping(c context.Context, mid int64, key, server string) (err 
 	var n = 2
 	if mid > 0 {
 		if err = conn.Send("HSET", keyMidServer(mid), key, server); err != nil {
-			log.Errorf("conn.Send(HSET %d,%s,%s) error(%v)", mid, server, key, err)
+			log.Error("conn.Send(HSET %d,%s,%s) error(%v)", mid, server, key, err)
 			return
 		}
 		if err = conn.Send("EXPIRE", keyMidServer(mid), d.redisExpire); err != nil {
-			log.Errorf("conn.Send(EXPIRE %d,%s,%s) error(%v)", mid, key, server, err)
+			log.Error("conn.Send(EXPIRE %d,%s,%s) error(%v)", mid, key, server, err)
 			return
 		}
 		n += 2
 	}
 	if err = conn.Send("SET", keyKeyServer(key), server); err != nil {
-		log.Errorf("conn.Send(HSET %d,%s,%s) error(%v)", mid, server, key, err)
+		log.Error("conn.Send(HSET %d,%s,%s) error(%v)", mid, server, key, err)
 		return
 	}
 	if err = conn.Send("EXPIRE", keyKeyServer(key), d.redisExpire); err != nil {
-		log.Errorf("conn.Send(EXPIRE %d,%s,%s) error(%v)", mid, key, server, err)
+		log.Error("conn.Send(EXPIRE %d,%s,%s) error(%v)", mid, key, server, err)
 		return
 	}
 	if err = conn.Flush(); err != nil {
-		log.Errorf("conn.Flush() error(%v)", err)
+		log.Error("conn.Flush() error(%v)", err)
 		return
 	}
 	for i := 0; i < n; i++ {
 		if _, err = conn.Receive(); err != nil {
-			log.Errorf("conn.Receive() error(%v)", err)
+			log.Error("conn.Receive() error(%v)", err)
 			return
 		}
 	}
@@ -86,22 +86,22 @@ func (d *Dao) ExpireMapping(c context.Context, mid int64, key string) (has bool,
 	var n = 1
 	if mid > 0 {
 		if err = conn.Send("EXPIRE", keyMidServer(mid), d.redisExpire); err != nil {
-			log.Errorf("conn.Send(EXPIRE %d,%s) error(%v)", mid, key, err)
+			log.Error("conn.Send(EXPIRE %d,%s) error(%v)", mid, key, err)
 			return
 		}
 		n++
 	}
 	if err = conn.Send("EXPIRE", keyKeyServer(key), d.redisExpire); err != nil {
-		log.Errorf("conn.Send(EXPIRE %d,%s) error(%v)", mid, key, err)
+		log.Error("conn.Send(EXPIRE %d,%s) error(%v)", mid, key, err)
 		return
 	}
 	if err = conn.Flush(); err != nil {
-		log.Errorf("conn.Flush() error(%v)", err)
+		log.Error("conn.Flush() error(%v)", err)
 		return
 	}
 	for i := 0; i < n; i++ {
 		if has, err = redis.Bool(conn.Receive()); err != nil {
-			log.Errorf("conn.Receive() error(%v)", err)
+			log.Error("conn.Receive() error(%v)", err)
 			return
 		}
 	}
@@ -115,22 +115,22 @@ func (d *Dao) DelMapping(c context.Context, mid int64, key, server string) (has 
 	n := 1
 	if mid > 0 {
 		if err = conn.Send("HDEL", keyMidServer(mid), key); err != nil {
-			log.Errorf("conn.Send(HDEL %d,%s,%s) error(%v)", mid, key, server, err)
+			log.Error("conn.Send(HDEL %d,%s,%s) error(%v)", mid, key, server, err)
 			return
 		}
 		n++
 	}
 	if err = conn.Send("DEL", keyKeyServer(key)); err != nil {
-		log.Errorf("conn.Send(HDEL %d,%s,%s) error(%v)", mid, key, server, err)
+		log.Error("conn.Send(HDEL %d,%s,%s) error(%v)", mid, key, server, err)
 		return
 	}
 	if err = conn.Flush(); err != nil {
-		log.Errorf("conn.Flush() error(%v)", err)
+		log.Error("conn.Flush() error(%v)", err)
 		return
 	}
 	for i := 0; i < n; i++ {
 		if has, err = redis.Bool(conn.Receive()); err != nil {
-			log.Errorf("conn.Receive() error(%v)", err)
+			log.Error("conn.Receive() error(%v)", err)
 			return
 		}
 	}
@@ -146,7 +146,7 @@ func (d *Dao) ServersByKeys(c context.Context, keys []string) (res []string, err
 		args = append(args, keyKeyServer(key))
 	}
 	if res, err = redis.Strings(conn.Do("MGET", args...)); err != nil {
-		log.Errorf("conn.Do(MGET %v) error(%v)", args, err)
+		log.Error("conn.Do(MGET %v) error(%v)", args, err)
 	}
 	return
 }
@@ -158,12 +158,12 @@ func (d *Dao) KeysByMids(c context.Context, mids []int64) (ress map[string]strin
 	ress = make(map[string]string)
 	for _, mid := range mids {
 		if err = conn.Send("HGETALL", keyMidServer(mid)); err != nil {
-			log.Errorf("conn.Do(HGETALL %d) error(%v)", mid, err)
+			log.Error("conn.Do(HGETALL %d) error(%v)", mid, err)
 			return
 		}
 	}
 	if err = conn.Flush(); err != nil {
-		log.Errorf("conn.Flush() error(%v)", err)
+		log.Error("conn.Flush() error(%v)", err)
 		return
 	}
 	for idx := 0; idx < len(mids); idx++ {
@@ -171,7 +171,7 @@ func (d *Dao) KeysByMids(c context.Context, mids []int64) (ress map[string]strin
 			res map[string]string
 		)
 		if res, err = redis.StringMap(conn.Receive()); err != nil {
-			log.Errorf("conn.Receive() error(%v)", err)
+			log.Error("conn.Receive() error(%v)", err)
 			return
 		}
 		if len(res) > 0 {
@@ -210,20 +210,20 @@ func (d *Dao) addServerOnline(c context.Context, key string, hashKey string, onl
 	defer conn.Close()
 	b, _ := json.Marshal(online)
 	if err = conn.Send("HSET", key, hashKey, b); err != nil {
-		log.Errorf("conn.Send(SET %s,%s) error(%v)", key, hashKey, err)
+		log.Error("conn.Send(SET %s,%s) error(%v)", key, hashKey, err)
 		return
 	}
 	if err = conn.Send("EXPIRE", key, d.redisExpire); err != nil {
-		log.Errorf("conn.Send(EXPIRE %s) error(%v)", key, err)
+		log.Error("conn.Send(EXPIRE %s) error(%v)", key, err)
 		return
 	}
 	if err = conn.Flush(); err != nil {
-		log.Errorf("conn.Flush() error(%v)", err)
+		log.Error("conn.Flush() error(%v)", err)
 		return
 	}
 	for i := 0; i < 2; i++ {
 		if _, err = conn.Receive(); err != nil {
-			log.Errorf("conn.Receive() error(%v)", err)
+			log.Error("conn.Receive() error(%v)", err)
 			return
 		}
 	}
@@ -255,13 +255,13 @@ func (d *Dao) serverOnline(c context.Context, key string, hashKey string) (onlin
 	b, err := redis.Bytes(conn.Do("HGET", key, hashKey))
 	if err != nil {
 		if err != redis.ErrNil {
-			log.Errorf("conn.Do(HGET %s %s) error(%v)", key, hashKey, err)
+			log.Error("conn.Do(HGET %s %s) error(%v)", key, hashKey, err)
 		}
 		return
 	}
 	online = new(model.Online)
 	if err = json.Unmarshal(b, online); err != nil {
-		log.Errorf("serverOnline json.Unmarshal(%s) error(%v)", b, err)
+		log.Error("serverOnline json.Unmarshal(%s) error(%v)", b, err)
 		return
 	}
 	return
@@ -273,7 +273,7 @@ func (d *Dao) DelServerOnline(c context.Context, server string) (err error) {
 	defer conn.Close()
 	key := keyServerOnline(server)
 	if _, err = conn.Do("DEL", key); err != nil {
-		log.Errorf("conn.Do(DEL %s) error(%v)", key, err)
+		log.Error("conn.Do(DEL %s) error(%v)", key, err)
 	}
 	return
 }

@@ -11,13 +11,13 @@ import (
 
 	"github.com/bilibili/discovery/naming"
 	resolver "github.com/bilibili/discovery/naming/grpc"
-	"github.com/Terry-Mao/goim/internal/logic"
-	"github.com/Terry-Mao/goim/internal/logic/conf"
-	"github.com/Terry-Mao/goim/internal/logic/grpc"
-	"github.com/Terry-Mao/goim/internal/logic/http"
-	"github.com/Terry-Mao/goim/internal/logic/model"
-	"github.com/Terry-Mao/goim/pkg/ip"
-	log "github.com/golang/glog"
+	log "github.com/go-kratos/kratos/pkg/log"
+	"github.com/ningchengzeng/goim/internal/logic"
+	"github.com/ningchengzeng/goim/internal/logic/conf"
+	"github.com/ningchengzeng/goim/internal/logic/grpc"
+	"github.com/ningchengzeng/goim/internal/logic/http"
+	"github.com/ningchengzeng/goim/internal/logic/model"
+	"github.com/ningchengzeng/goim/pkg/ip"
 )
 
 const (
@@ -30,9 +30,9 @@ func main() {
 	if err := conf.Init(); err != nil {
 		panic(err)
 	}
-	log.Infof("goim-logic [version: %s env: %+v] start", ver, conf.Conf.Env)
+	log.Info("goim-logic [version: %s env: %+v] start", ver, conf.Conf.Env)
 	// grpc register naming
-	dis := naming.New(conf.Conf.Discovery)
+	dis := naming.New(conf.Conf.DiscoveryConfig())
 	resolver.Register(dis)
 	// logic
 	srv := logic.New(conf.Conf)
@@ -44,7 +44,7 @@ func main() {
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
 	for {
 		s := <-c
-		log.Infof("goim-logic get a signal %s", s.String())
+		log.Info("goim-logic get a signal %s", s.String())
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			if cancel != nil {
@@ -53,8 +53,8 @@ func main() {
 			srv.Close()
 			httpSrv.Close()
 			rpcSrv.GracefulStop()
-			log.Infof("goim-logic [version: %s] exit", ver)
-			log.Flush()
+			log.Info("goim-logic [version: %s] exit", ver)
+			log.Close()
 			return
 		case syscall.SIGHUP:
 		default:
